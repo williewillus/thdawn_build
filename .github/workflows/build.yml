@@ -42,3 +42,16 @@ jobs:
         name: a6osx.boot
         path: thdawn/thdawn.boot
         archive: false
+  a6nt:
+    runs-on: windows-2025
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        submodules: true
+    - name: Get Raylib
+      run: Invoke-WebRequest -Uri 'https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_win64_msvc16.zip' -OutFile .
+    - name: Install Chez Scheme
+      run: winget install -e --id Cisco.ChezScheme
+    - name: List Chez LocationCompile Project
+      run: winget list Cisco.ChezScheme --details
