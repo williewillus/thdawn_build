@@ -1,0 +1,44 @@
+name: Build
+
+on: [push]
+
+ # TODO: Archive raylib and chez too on macOS?...
+jobs:
+  arm64osx:
+    runs-on: macos-15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        submodules: true
+    - name: Install Raylib
+      run: brew install raylib
+    - name: Install Chez Scheme
+      run: brew install chezscheme
+    - name: Compile Project
+      run: cd thdawn && PROD=1 chez --script build.ss
+    - name: Archive boot file
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: arm64osx.boot
+        path: thdawn/thdawn.boot
+        archive: false
+  a6osx:
+    runs-on: macos-15-intel
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        submodules: true
+    - name: Install Raylib
+      run: brew install raylib
+    - name: Install Chez Scheme
+      run: brew install chezscheme
+    - name: Compile Project
+      run: cd thdawn && PROD=1 chez --script build.ss
+    - name: Archive boot file
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: a6osx.boot
+        path: thdawn/thdawn.boot
+        archive: false
