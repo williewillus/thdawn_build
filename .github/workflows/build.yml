@@ -52,6 +52,6 @@ jobs:
     - name: Get Raylib
       run: Invoke-WebRequest -Uri 'https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_win64_msvc16.zip' -OutFile .
     - name: Install Chez Scheme
-      run: winget install -e --id Cisco.ChezScheme
+      run: winget install --accept-source-agreements -e --id Cisco.ChezScheme
     - name: List Chez LocationCompile Project
       run: winget list Cisco.ChezScheme --details
