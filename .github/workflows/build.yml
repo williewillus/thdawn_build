@@ -33,7 +33,7 @@ jobs:
       run: |
         pwd
         ls .
-        cd thdawn && PROD=1 chez --program build.ss
+        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
         cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle
       run: |
