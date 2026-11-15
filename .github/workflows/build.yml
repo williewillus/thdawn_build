@@ -2,45 +2,51 @@ name: Build
 
 on: [push]
 
- # TODO: Archive raylib and chez too on macOS?...
 jobs:
-  arm64osx:
-    runs-on: macos-15
+  macos:
+    strategy:
+      matrix:
+        platform: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.platform }}
     steps:
-    - name: Checkout
+    - name: Checkout Self
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         submodules: true
-    - name: Install Raylib
-      run: brew install raylib
-    - name: Install Chez Scheme
-      run: brew install chezscheme@10.4.1
-    - name: Compile Project
-      run: cd thdawn && PROD=1 chez --program build.ss
-    - name: Archive boot file
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-      with:
-        name: arm64osx.boot
-        path: thdawn/thdawn.boot
-        archive: false
-  a6osx:
-    runs-on: macos-15-intel
-    steps:
-    - name: Checkout
+    - name: Make Distdir
+      run: mkdir ~/ojamajo_gensou
+    - name: Checkout Chez Scheme
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        submodules: true
-    - name: Install Raylib
-      run: brew install raylib
-    - name: Install Chez Scheme
-      run: brew install chezscheme@10.4.1
+        repository: cisco/ChezScheme
+        filter: blob:none
+        submodules: recursive
+        ref: v10.4.1
+    - name: Build Chez Scheme
+      run: |
+        git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
+        cd ChezScheme
+        git submodule update --init --recursive
+        ./configure --disable-curses --disable-x11 --installprefix=~/ojamajo_gensou
+        make
+        make install
+        # Delete examples and manpages
+        rm -rf ~/ojamajo_gensou/lib/csv10.4.1/examples ~/ojamajo_gensou/share
+    - name: Get Raylib
+      run: |
+        curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
+        cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
     - name: Compile Project
-      run: cd thdawn && PROD=1 chez --program build.ss
-    - name: Archive boot file
+      run: |
+        cd thdawn && PROD=1 chez --program build.ss
+        cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
+    - name: Bundle
+      run: |
+        zip -r ojamajo_gensou.zip ojamajo_gensou
+    - name: Upload Bundle
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
-        name: a6osx.boot
-        path: thdawn/thdawn.boot
+        path: ojamajo_gensou.zip
         archive: false
   a6nt:
     runs-on: windows-2025
