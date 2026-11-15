@@ -15,13 +15,6 @@ jobs:
         submodules: true
     - name: Make Distdir
       run: mkdir ~/ojamajo_gensou
-    - name: Checkout Chez Scheme
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        repository: cisco/ChezScheme
-        filter: blob:none
-        submodules: recursive
-        ref: v10.4.1
     - name: Build Chez Scheme
       run: |
         git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
@@ -38,6 +31,8 @@ jobs:
         cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
     - name: Compile Project
       run: |
+        pwd
+        ls .
         cd thdawn && PROD=1 chez --program build.ss
         cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle
