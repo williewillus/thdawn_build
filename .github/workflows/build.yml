@@ -31,18 +31,12 @@ jobs:
         cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
     - name: Compile Project
       run: |
-        pwd
-        ls .
         cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
         cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
-    - name: Bundle
-      run: |
-        zip -r ojamajo_gensou.zip ojamajo_gensou
-    - name: Upload Bundle
+    - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
-        path: ojamajo_gensou.zip
-        archive: false
+        path: ~/ojamajo_gensou/
   a6nt:
     runs-on: windows-2025
     steps:
