@@ -57,7 +57,7 @@ jobs:
       # powershell with windows sdk available
       run: |
         cd ChezScheme
-        build.bat ta6nt
+        .\build.bat ta6nt
     - name: Install Chez Scheme
       shell: bash
       run: |
