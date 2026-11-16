@@ -3,48 +3,78 @@ name: Build
 on: [push]
 
 jobs:
-  macos:
-    strategy:
-      matrix:
-        platform: [macos-15, macos-15-intel]
-    runs-on: ${{ matrix.platform }}
+  # macos:
+  #   strategy:
+  #     matrix:
+  #       platform: [macos-15, macos-15-intel]
+  #   runs-on: ${{ matrix.platform }}
+  #   steps:
+  #   - name: Checkout Self
+  #     uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+  #     with:
+  #       submodules: true
+  #   - name: Make Distdir
+  #     run: mkdir ~/ojamajo_gensou
+  #   - name: Build Chez Scheme
+  #     run: |
+  #       git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
+  #       cd ChezScheme
+  #       git submodule update --init --recursive
+  #       ./configure --disable-curses --disable-x11 --installprefix=~/ojamajo_gensou
+  #       make
+  #       make install
+  #       # Delete examples and manpages
+  #       rm -rf ~/ojamajo_gensou/lib/csv10.4.1/examples ~/ojamajo_gensou/share
+  #   - name: Get Raylib
+  #     run: |
+  #       curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
+  #       cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
+  #   - name: Compile Project
+  #     run: |
+  #       cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
+  #       cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
+  #   - name: Bundle and Upload
+  #     uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+  #     with:
+  #       path: ~/ojamajo_gensou/
+  windows:
+    runs-on: windows-2025
     steps:
     - name: Checkout Self
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         submodules: true
     - name: Make Distdir
+      shell: bash
       run: mkdir ~/ojamajo_gensou
-    - name: Build Chez Scheme
+    - name: Clone Chez Scheme
+      shell: bash
       run: |
         git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
         cd ChezScheme
         git submodule update --init --recursive
-        ./configure --disable-curses --disable-x11 --installprefix=~/ojamajo_gensou
-        make
-        make install
-        # Delete examples and manpages
-        rm -rf ~/ojamajo_gensou/lib/csv10.4.1/examples ~/ojamajo_gensou/share
+    - name: Build Chez Scheme
+      # powershell with windows sdk available
+      run: |
+        cd ChezScheme
+        build.bat ta6nt
+    - name: Install Chez Scheme
+      shell: bash
+      run: |
+        cp -r ChezScheme/ta6nt/bin ChezScheme/ta6nt/boot ~/ojamajo_gensou
     - name: Get Raylib
+      shell: bash
       run: |
-        curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
-        cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
+        cd thdawn
+        curl -L -O https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_win64_msvc16.zip
+        unzip -j raylib-6.2_win64_msvc16.zip raylib-6.2_win64_msvc16/lib/raylib.dll
     - name: Compile Project
+      shell: bash
       run: |
-        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
-        cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
+        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/ta6nt/scheme.exe --program build.ss
+        cp -r assets licenses replays omake.txt README.txt start_x64.bat tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
+        name: ojamajo_gensou.zip
         path: ~/ojamajo_gensou/
-  a6nt:
-    runs-on: windows-2025
-    steps:
-    - name: Checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        submodules: true
-    - name: Get Raylib
-      run: Invoke-WebRequest -Uri 'https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_win64_msvc16.zip' -OutFile .
-    - name: Install Chez Scheme
-      run: winget install --accept-source-agreements -e --id Cisco.ChezScheme -v 10.4.1
