@@ -38,7 +38,18 @@ jobs:
   #     with:
   #       path: ~/ojamajo_gensou/
   windows:
-    runs-on: windows-2025
+    strategy:
+      matrix:
+        config:
+          - platform: windows-2025
+            machine_type: ta6nt
+            start_script: start_x64.bat
+            raylib_name: raylib-6.2_win64_msvc16
+          - platform: windows-11-arm
+            machine_type: tarm64nt
+            start_script: start_arm64.bat
+            raylib_name: raylib-6.2_winarm64_msvc16
+    runs-on: ${{ matrix.config.platform }}
     steps:
     - name: Checkout Self
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -57,22 +68,22 @@ jobs:
       # powershell with windows sdk available
       run: |
         cd ChezScheme
-        .\build.bat ta6nt
+        .\build.bat ${{ matrix.config.machine_type }}
     - name: Install Chez Scheme
       shell: bash
       run: |
-        cp -r ChezScheme/ta6nt/bin ChezScheme/ta6nt/boot ~/ojamajo_gensou
+        cp -r ChezScheme/${{ matrix.config.machine_type }}/bin ChezScheme/${{ matrix.config.machine_type }} ~/ojamajo_gensou
     - name: Get Raylib
       shell: bash
       run: |
         cd thdawn
-        curl -L -O https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_win64_msvc16.zip
-        unzip -j raylib-6.2_win64_msvc16.zip raylib-6.2_win64_msvc16/lib/raylib.dll
+        curl -L -O https://github.com/raysan5/raylib/releases/download/6.2/${{ matrix.config.raylib_name }}.zip
+        unzip -j ${{ matrix.config.raylib_name }}.zip ${{ matrix.config.raylib_name }}/lib/raylib.dll -d ~/ojamajo_gensou
     - name: Compile Project
       shell: bash
       run: |
-        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/ta6nt/scheme.exe --program build.ss
-        cp -r assets licenses replays omake.txt README.txt start_x64.bat tech.txt thdawn.boot ~/ojamajo_gensou/
+        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/${{ matrix.config.machine_type }}/scheme.exe --program build.ss
+        cp -r assets licenses replays omake.txt README.txt ${{ matrix.config.start_script }} tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
