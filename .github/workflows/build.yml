@@ -3,40 +3,45 @@ name: Build
 on: [push]
 
 jobs:
-  # macos:
-  #   strategy:
-  #     matrix:
-  #       platform: [macos-15, macos-15-intel]
-  #   runs-on: ${{ matrix.platform }}
-  #   steps:
-  #   - name: Checkout Self
-  #     uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-  #     with:
-  #       submodules: true
-  #   - name: Make Distdir
-  #     run: mkdir ~/ojamajo_gensou
-  #   - name: Build Chez Scheme
-  #     run: |
-  #       git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
-  #       cd ChezScheme
-  #       git submodule update --init --recursive
-  #       ./configure --disable-curses --disable-x11 --installprefix=~/ojamajo_gensou
-  #       make
-  #       make install
-  #       # Delete examples and manpages
-  #       rm -rf ~/ojamajo_gensou/lib/csv10.4.1/examples ~/ojamajo_gensou/share
-  #   - name: Get Raylib
-  #     run: |
-  #       curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
-  #       cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
-  #   - name: Compile Project
-  #     run: |
-  #       cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
-  #       cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
-  #   - name: Bundle and Upload
-  #     uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-  #     with:
-  #       path: ~/ojamajo_gensou/
+  macos:
+    strategy:
+      matrix:
+        config:
+          - platform: macos-15
+            machine_type: ta6osx
+          - platform: macos-15-intel
+            machine_type: tarm64osx
+    runs-on: ${{ matrix.config.platform }}
+    steps:
+    - name: Checkout Self
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        submodules: true
+    - name: Make Distdir
+      run: mkdir ~/ojamajo_gensou
+    - name: Build Chez Scheme
+      run: |
+        git clone --filter=blob:none --branch v10.4.1 https://github.com/cisco/ChezScheme
+        cd ChezScheme
+        git submodule update --init --recursive
+        ./configure --disable-curses --disable-x11 --installprefix=~/ojamajo_gensou
+        make
+        make install
+        # Delete examples and manpages
+        rm -rf ~/ojamajo_gensou/lib/csv10.4.1/examples ~/ojamajo_gensou/share
+    - name: Get Raylib
+      run: |
+        curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
+        cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
+    - name: Compile Project
+      run: |
+        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
+        cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
+    - name: Bundle and Upload
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: ojamajo_gensou_${{ matrix.config.machine_type }}.zip
+        path: ~/ojamajo_gensou/
   windows:
     strategy:
       matrix:
@@ -72,7 +77,7 @@ jobs:
     - name: Install Chez Scheme
       shell: bash
       run: |
-        cp -r ChezScheme/${{ matrix.config.machine_type }}/bin ChezScheme/${{ matrix.config.machine_type }} ~/ojamajo_gensou
+        cp -r ChezScheme/${{ matrix.config.machine_type }}/bin ChezScheme/${{ matrix.config.machine_type }}/boot ~/ojamajo_gensou
     - name: Get Raylib
       shell: bash
       run: |
@@ -87,5 +92,5 @@ jobs:
     - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
-        name: ojamajo_gensou.zip
+        name: ojamajo_gensou_${{ matrix.config.machine_type }}.zip
         path: ~/ojamajo_gensou/
