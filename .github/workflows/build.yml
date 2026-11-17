@@ -34,14 +34,17 @@ jobs:
         curl -L https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz | tar xzf -
         cp raylib-6.2_macos/lib/libraylib.6.2.0.dylib ~/ojamajo_gensou/libraylib.dylib
     - name: Compile Project
+      id: compile_project
       run: |
         cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
+        echo "thdawnver=$(git describe --always)" >> "$GITHUB_OUTPUT"
         cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
-        name: ojamajo_gensou_${{ matrix.config.machine_type }}.zip
-        path: ~/ojamajo_gensou/
+        name: ojamajo_gensou_${{ matrix.config.machine_type }}_${{ steps.compile_project.outputs.thdawnver }}.zip
+        include-hidden-files: true
+        path: ~/ojamajo_gensou
   windows:
     strategy:
       matrix:
@@ -85,12 +88,15 @@ jobs:
         curl -L -O https://github.com/raysan5/raylib/releases/download/6.2/${{ matrix.config.raylib_name }}.zip
         unzip -j ${{ matrix.config.raylib_name }}.zip ${{ matrix.config.raylib_name }}/lib/raylib.dll -d ~/ojamajo_gensou
     - name: Compile Project
+      id: compile_project
       shell: bash
       run: |
         cd thdawn && PROD=1 ~/ojamajo_gensou/bin/${{ matrix.config.machine_type }}/scheme.exe --program build.ss
+        echo "thdawnver=$(git describe --always)" >> "$GITHUB_OUTPUT"
         cp -r assets licenses replays omake.txt README.txt ${{ matrix.config.start_script }} tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle and Upload
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
-        name: ojamajo_gensou_${{ matrix.config.machine_type }}.zip
-        path: ~/ojamajo_gensou/
+        name: ojamajo_gensou_${{ matrix.config.machine_type }}_${{ steps.compile_project.outputs.thdawnver }}.zip
+        include-hidden-files: true
+        path: ~/ojamajo_gensou
