@@ -16,8 +16,8 @@ jobs:
     - name: Checkout Self
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        submodules: true
-        fetch-depth: 0
+        submodules: recursive
+        fetch-tags: true
     - name: Make Distdir
       run: mkdir ~/ojamajo_gensou
     - name: Build Chez Scheme
@@ -64,8 +64,8 @@ jobs:
     - name: Checkout Self
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        submodules: true
-        fetch-depth: 0
+        submodules: recursive
+        fetch-tags: true
     - name: Make Distdir
       shell: bash
       run: mkdir ~/ojamajo_gensou
