@@ -37,8 +37,9 @@ jobs:
     - name: Compile Project
       id: compile_project
       run: |
+        cd thdawn
         export BUILD_VERSION="$(git describe --always)"
-        cd thdawn && PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
+        PROD=1 ~/ojamajo_gensou/bin/scheme --program build.ss
         echo "thdawnver=$BUILD_VERSION" >> "$GITHUB_OUTPUT"
         cp -r assets licenses replays omake.txt README.txt start.sh tech.txt thdawn.boot ~/ojamajo_gensou/
     - name: Bundle and Upload
